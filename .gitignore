@@ -1,0 +1,4 @@
+*.exe
+/.ideal
+*.exe*
+.idea
