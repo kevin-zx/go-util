@@ -3,18 +3,19 @@ package fileUtil
 import (
 	"os"
 	"bufio"
-	"fmt"
+	//"fmt"
 )
 
 func CheckFileIsExist(file_name string) bool {
-	var exsit = true
+	var exist = true
 	if _, err := os.Stat(file_name); os.IsNotExist(err) {
-		exsit = false
+		exist = false
 	}
-	return exsit
+	return exist
 }
 
-func WriteToFile(file_name string, is_append bool, content string) {
+//写入数据到文件返回写入文件得字长
+func WriteToFile(file_name string, is_append bool, content string) int {
 	var f *os.File
 	var err error
 	if CheckFileIsExist(file_name) {
@@ -23,7 +24,6 @@ func WriteToFile(file_name string, is_append bool, content string) {
 		}else {
 			f, err = os.OpenFile(file_name, os.O_CREATE, 0666)
 		}
-
 		defer f.Close()
 	} else {
 		f, err = os.Create(file_name)
@@ -31,9 +31,9 @@ func WriteToFile(file_name string, is_append bool, content string) {
 	check(err)
 	w := bufio.NewWriter(f)  //创建新的 Writer 对象
 	n4, err:= w.WriteString(content)
-	fmt.Printf("写入 %d 个字节n", n4)
 	w.Flush()
 	check(err)
+	return n4
 }
 
 func check(e error) {
