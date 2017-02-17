@@ -4,7 +4,11 @@ import (
 	"os"
 	"bufio"
 	//"fmt"
+	"io/ioutil"
+	"github.com/axgle/mahonia"
 )
+
+
 
 func CheckFileIsExist(file_name string) bool {
 	var exist = true
@@ -34,6 +38,18 @@ func WriteToFile(file_name string, is_append bool, content string) int {
 	w.Flush()
 	check(err)
 	return n4
+}
+
+//ioutil read file
+func ReadFile(filename string, charset string) string{
+	file,err := os.Open(filename)
+	check(err)
+	defer file.Close()
+	decoder := mahonia.NewDecoder(charset)
+	f := decoder.NewReader(file)
+	file_content,err := ioutil.ReadAll(f)
+	check(err)
+	return string(file_content)
 }
 
 func check(e error) {

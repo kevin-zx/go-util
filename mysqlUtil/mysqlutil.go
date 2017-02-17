@@ -7,20 +7,31 @@ import (
 _ "github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
+type MysqlUtil struct {
+	db *sql.DB
+	
+}
+var GlobalMysqlUtil MysqlUtil
 
-func init() {
-	db, _ = sql.Open("mysql", "remote:Iknowthat@tcp(115.159.3.51:3306)/eb_spider")
-	db.SetMaxIdleConns(1)
-	db.SetMaxOpenConns(2)
-	err := db.Ping()
+func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int,MaxOpenConns int)  {
+	dataSourceNameFormat := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",user,passwd,host,port,databases)
+	println(dataSourceNameFormat)
+	mu.db, _ = sql.Open("mysql", dataSourceNameFormat)
+	mu.db.SetMaxIdleConns(maxIdleConns)
+	mu.db.SetMaxOpenConns(MaxOpenConns)
+	err := mu.db.Ping()
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
+
 }
 
-func Insert(prepareSql string, args ...interface{}) error {
-	stmt, err := db.Prepare(prepareSql)
+func (mu *MysqlUtil) InitMySqlUtil(host string, port int, user string, passwd string, databases string)  {
+	mu.initMySqlUtil(host,port,user,passwd,databases,1,2)
+}
+
+func (mu *MysqlUtil) Insert(prepareSql string, args ...interface{}) error {
+	stmt, err := mu.db.Prepare(prepareSql)
 	if err != nil {
 		return err
 	}
@@ -30,10 +41,10 @@ func Insert(prepareSql string, args ...interface{}) error {
 		return err
 	}
 	return nil
-
 }
-func Exec(prepareSql string, args ...interface{}) error {
-	stmt, err := db.Prepare(prepareSql)
+
+func (mu *MysqlUtil) Exec(prepareSql string, args ...interface{}) error {
+	stmt, err := mu.db.Prepare(prepareSql)
 	if err != nil {
 		return err
 	}
@@ -44,10 +55,13 @@ func Exec(prepareSql string, args ...interface{}) error {
 		return err
 	}
 	return nil
-
 }
-func ExecBatch(prepareSql string, args [][]interface{}) error {
-	tx, err := db.Begin()
+
+
+
+
+func (mu *MysqlUtil) ExecBatch(prepareSql string, args [][]interface{}) error {
+	tx, err := mu.db.Begin()
 	if err != nil {
 		return err
 	}
@@ -71,8 +85,8 @@ func ExecBatch(prepareSql string, args [][]interface{}) error {
 
 }
 
-func Select(prepareSql string, args ...interface{}) ([][]sql.RawBytes, error) {
-	rows, err := db.Query(prepareSql)
+func (mu *MysqlUtil) Select(prepareSql string, args ...interface{}) ([][]sql.RawBytes, error) {
+	rows, err := mu.db.Query(prepareSql)
 	if err != nil {
 		return nil, err
 	}
@@ -103,8 +117,8 @@ func Select(prepareSql string, args ...interface{}) ([][]sql.RawBytes, error) {
 	return valueArr, nil
 }
 
-func SelectAll(sqlstr string, args ...interface{}) (*[]map[string]string, error) {
-	stmtOut, err := db.Prepare(sqlstr)
+func (mu *MysqlUtil) SelectAll(sqlstr string, args ...interface{}) (*[]map[string]string, error) {
+	stmtOut, err := mu.db.Prepare(sqlstr)
 	if err != nil {
 		panic(err.Error())
 	}
