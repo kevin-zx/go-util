@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"crypto/tls"
+	"net/http/cookiejar"
 )
 
 //GetWebConFromUrl simply get web content
@@ -58,9 +60,17 @@ func getContentFromResponse(response *http.Response) (string, error) {
 
 func DoRequest(url string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (*http.Response, error) {
 	timeout := time.Duration(timeOut * time.Second)
+	//https认证
+	tr := &http.Transport{
+		TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
+		DisableCompression: true,
+	}
+
 	client := http.Client{
 		Timeout: timeout,
+		Transport: tr,
 	}
+	client.Jar, _ = cookiejar.New(nil)
 	method = strings.ToUpper(method)
 	var req *http.Request
 	var err error
