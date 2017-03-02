@@ -15,7 +15,7 @@ var GlobalMysqlUtil MysqlUtil
 
 func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int,MaxOpenConns int)  {
 	dataSourceNameFormat := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",user,passwd,host,port,databases)
-	println(dataSourceNameFormat)
+	//println(dataSourceNameFormat)
 	mu.db, _ = sql.Open("mysql", dataSourceNameFormat)
 	mu.db.SetMaxIdleConns(maxIdleConns)
 	mu.db.SetMaxOpenConns(MaxOpenConns)
