@@ -31,6 +31,7 @@ func (mu *MysqlUtil) InitMySqlUtil(host string, port int, user string, passwd st
 }
 
 func (mu *MysqlUtil) Insert(prepareSql string, args ...interface{}) error {
+
 	stmt, err := mu.db.Prepare(prepareSql)
 	if err != nil {
 		return err

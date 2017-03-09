@@ -8,3 +8,7 @@ var stand_date_format = "2006-01-02 15:04:05"
 func GetCurrentDateTime() string {
 	return time.Now().Format(stand_date_format)
 }
+
+func GetCurrentHour() int{
+	return time.Now().Hour()
+}
