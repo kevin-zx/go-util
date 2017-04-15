@@ -13,7 +13,7 @@ import (
 //GetWebConFromUrl simply get web content
 //from net
 func GetWebConFromUrl(url string) (string, error) {
-	response, err := DoRequest(url, nil, "GET", nil, 10)
+	response, err := DoRequest(url, nil, "GET", nil, 10*1000)
 	if err != nil {
 		return "", err
 	}
@@ -33,7 +33,7 @@ func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method
 //GetWebConFromUrlWithHeader get web con from target url
 //param headerMap is some header info
 func GetWebConFromUrlWithHeader(url string, headerMap map[string]string) (string, error) {
-	response, err := DoRequest(url, headerMap, "GET", nil, 10)
+	response, err := DoRequest(url, headerMap, "GET", nil, 10*1000)
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +59,7 @@ func getContentFromResponse(response *http.Response) (string, error) {
 }
 
 func DoRequest(url string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (*http.Response, error) {
-	timeout := time.Duration(timeOut * time.Second)
+	timeout := time.Duration(timeOut * time.Millisecond)
 	//https认证
 	tr := &http.Transport{
 		TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
@@ -75,7 +75,10 @@ func DoRequest(url string, headerMap map[string]string, method string, postData 
 	var req *http.Request
 	var err error
 	if postData != nil && method == "POST" {
+		//print(string(postData))
+
 		req, err = http.NewRequest(method, url, bytes.NewReader(postData))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
 		if err != nil {
 			return nil, err
 		}
