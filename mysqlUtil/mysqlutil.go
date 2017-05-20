@@ -42,6 +42,23 @@ func (mu *MysqlUtil) Insert(prepareSql string, args ...interface{}) error {
 	return nil
 }
 
+func (mu *MysqlUtil) InsertId(prepareSql string, args ...interface{}) (int64,error) {
+	stmt, err := mu.db.Prepare(prepareSql)
+	if err != nil {
+		return 0,err
+	}
+	defer stmt.Close()
+	re, err := stmt.Exec(args...)
+	if err != nil {
+		return 0,err
+	}
+	last_id,err := re.LastInsertId()
+	if err != nil {
+		return 0,err
+	}
+	return last_id,nil
+}
+
 func (mu *MysqlUtil) Exec(prepareSql string, args ...interface{}) error {
 	stmt, err := mu.db.Prepare(prepareSql)
 	if err != nil {
