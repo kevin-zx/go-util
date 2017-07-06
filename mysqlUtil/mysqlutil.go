@@ -25,9 +25,14 @@ func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd st
 	}
 }
 
+func (mu *MysqlUtil) InitMySqlUtilDetail(host string, port int, user string, passwd string, databases string, axIdleConns int,MaxOpenConns int)  {
+	mu.initMySqlUtil(host,port,user,passwd,databases,axIdleConns,MaxOpenConns)
+}
+
 func (mu *MysqlUtil) InitMySqlUtil(host string, port int, user string, passwd string, databases string)  {
 	mu.initMySqlUtil(host,port,user,passwd,databases,1,2)
 }
+
 
 func (mu *MysqlUtil) Insert(prepareSql string, args ...interface{}) error {
 	stmt, err := mu.db.Prepare(prepareSql)
