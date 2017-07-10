@@ -54,7 +54,7 @@ func getContentFromResponse(response *http.Response) (string, error) {
 			return "", err
 		}
 
-		c = append(c, buf...)
+		c = append(c, buf[0:n]...)
 	}
 	return string(c), nil
 }
