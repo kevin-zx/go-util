@@ -6,7 +6,7 @@ import (
 )
 
 func TestGetDeltaDate(t *testing.T) {
-	println(GetDeltaDate(-10 * time.Hour))
+	println(GetDeltaDateTime(-10 * time.Hour))
 }
 
 func TestDateStr2Date(t *testing.T) {

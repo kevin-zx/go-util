@@ -19,10 +19,16 @@ func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd st
 	mu.db, _ = sql.Open("mysql", dataSourceNameFormat)
 	mu.db.SetMaxIdleConns(maxIdleConns)
 	mu.db.SetMaxOpenConns(MaxOpenConns)
+	//mu.db.Close()
 	err := mu.db.Ping()
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (mu *MysqlUtil) Close() error {
+	err := mu.db.Close()
+	return err
 }
 
 func (mu *MysqlUtil) InitMySqlUtilDetail(host string, port int, user string, passwd string, databases string, axIdleConns int,MaxOpenConns int)  {
@@ -137,6 +143,7 @@ func (mu *MysqlUtil) Select(prepareSql string, args ...interface{}) ([][]sql.Raw
 	}
 	return valueArr, nil
 }
+
 
 func (mu *MysqlUtil) SelectAll(sqlstr string, args ...interface{}) (*[]map[string]string, error) {
 	stmtOut, err := mu.db.Prepare(sqlstr)
