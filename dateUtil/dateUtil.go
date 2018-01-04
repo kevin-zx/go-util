@@ -2,7 +2,6 @@ package dateUtil
 
 import (
 	"time"
-	"github.com/kevin-zx/go-util/errorUtil"
 )
 
 //go的特殊format格式 1月2日 三点（二十四小时字） 四分 五秒 06年
@@ -34,10 +33,10 @@ func GetDeltaDate(d time.Duration) string  {
 }
 
 //从日期字符串格式转化成time.Time格式
-func DateStr2Date(dateStr string) time.Time {
+func DateStr2Date(dateStr string) (targetTime time.Time,err error) {
 	loc,err := time.LoadLocation("Local")
-	errorUtil.CheckErrorExit(err)
-	theTime,err := time.ParseInLocation(stand_date_time_format,dateStr,loc)
-	errorUtil.CheckErrorExit(err)
-	return theTime
+	return time.Time{},err
+	targetTime,err = time.ParseInLocation(stand_date_time_format,dateStr,loc)
+	return
+
 }
