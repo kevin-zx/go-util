@@ -13,7 +13,7 @@ type MysqlUtil struct {
 }
 var GlobalMysqlUtil MysqlUtil
 
-func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int,MaxOpenConns int)  {
+func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int,MaxOpenConns int) error {
 	dataSourceNameFormat := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",user,passwd,host,port,databases)
 	//println(dataSourceNameFormat)
 	mu.db, _ = sql.Open("mysql", dataSourceNameFormat)
@@ -21,9 +21,16 @@ func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd st
 	mu.db.SetMaxOpenConns(MaxOpenConns)
 	//mu.db.Close()
 	err := mu.db.Ping()
+	return err
+}
+
+func (mu *MysqlUtil) IsAlive() bool  {
+	err := mu.db.Ping()
 	if err != nil {
-		panic(err)
+		mu.Close()
+		return false
 	}
+	return true
 }
 
 func (mu *MysqlUtil) Close() error {
@@ -31,12 +38,12 @@ func (mu *MysqlUtil) Close() error {
 	return err
 }
 
-func (mu *MysqlUtil) InitMySqlUtilDetail(host string, port int, user string, passwd string, databases string, axIdleConns int,MaxOpenConns int)  {
-	mu.initMySqlUtil(host,port,user,passwd,databases,axIdleConns,MaxOpenConns)
+func (mu *MysqlUtil) InitMySqlUtilDetail(host string, port int, user string, passwd string, databases string, axIdleConns int,MaxOpenConns int) error {
+	return mu.initMySqlUtil(host,port,user,passwd,databases,axIdleConns,MaxOpenConns)
 }
 
-func (mu *MysqlUtil) InitMySqlUtil(host string, port int, user string, passwd string, databases string)  {
-	mu.initMySqlUtil(host,port,user,passwd,databases,1,2)
+func (mu *MysqlUtil) InitMySqlUtil(host string, port int, user string, passwd string, databases string) error {
+	return mu.initMySqlUtil(host,port,user,passwd,databases,0,0)
 }
 
 
@@ -77,8 +84,8 @@ func (mu *MysqlUtil) Exec(prepareSql string, args ...interface{}) error {
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(args...)
-	fmt.Println(err)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	return nil
