@@ -15,12 +15,17 @@ var GlobalMysqlUtil MysqlUtil
 
 func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int,MaxOpenConns int) error {
 	dataSourceNameFormat := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",user,passwd,host,port,databases)
-	//println(dataSourceNameFormat)
+	println(dataSourceNameFormat)
 	mu.db, _ = sql.Open("mysql", dataSourceNameFormat)
 	mu.db.SetMaxIdleConns(maxIdleConns)
 	mu.db.SetMaxOpenConns(MaxOpenConns)
 	//mu.db.Close()
 	err := mu.db.Ping()
+	return err
+}
+func (mu *MysqlUtil) InitMySqlUtilByDb(db *sql.DB) error {
+	mu.db = db
+	err := db.Ping()
 	return err
 }
 

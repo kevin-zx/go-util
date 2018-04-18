@@ -10,13 +10,15 @@ import (
 
 
 
-func CheckFileIsExist(file_name string) bool {
+func CheckFileIsExist(fileName string) bool {
 	var exist = true
-	if _, err := os.Stat(file_name); os.IsNotExist(err) {
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		exist = false
 	}
 	return exist
 }
+
+
 
 //写入数据到文件返回写入文件得字长
 func WriteToFile(file_name string, is_append bool, content string) int {
