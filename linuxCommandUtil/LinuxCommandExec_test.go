@@ -6,8 +6,8 @@ import (
 
 func TestLinuxServer_ExecCommand(t *testing.T) {
 	ls := LinuxServer{UserName:"root",
-		Password:"Iknowthat@@!221",
-		Host:"115.159.79.85",
+		Password:"passwd",
+		Host:"127.0.0.1",
 		Port:22,
 		}
 	result,err := ls.ExecCommand("df -h")
