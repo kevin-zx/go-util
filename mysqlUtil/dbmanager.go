@@ -24,17 +24,17 @@ type MySQLServer struct {
 
 // 从文件中读取配置
 func (pdm *ProjectDbManager) InitServers(confPath string) error{
-	json_data,err := ioutil.ReadFile(confPath)
+	jsonData,err := ioutil.ReadFile(confPath)
 	if err != nil {
 		return err
 	}
-	json.Unmarshal(json_data,pdm)
+	json.Unmarshal(jsonData,pdm)
 	return nil
 }
 
 // 根据server的名称和数据库名获取对应的db
 func (pdm *ProjectDbManager) GetDb(serverName string, dbName string) (MysqlUtil, error) {
-	ms_instance := MysqlUtil{}
+	msInstance := MysqlUtil{}
 	for _, mySQLServer := range pdm.MySQLServers{
 		if mySQLServer.ServerName == serverName{
 			if mysqlDb,ok := mySQLServer.dbMus[dbName];ok{
@@ -43,15 +43,15 @@ func (pdm *ProjectDbManager) GetDb(serverName string, dbName string) (MysqlUtil,
 			if mySQLServer.dbMus == nil {
 				mySQLServer.dbMus = make(map[string]MysqlUtil)
 			}
-			mySQLServer.dbMus[dbName] = ms_instance
-			err := ms_instance.InitMySqlUtilDetail(mySQLServer.Host, mySQLServer.Port, mySQLServer.UserName, mySQLServer.PassWord,dbName,1,2)
+			mySQLServer.dbMus[dbName] = msInstance
+			err := msInstance.InitMySqlUtilDetail(mySQLServer.Host, mySQLServer.Port, mySQLServer.UserName, mySQLServer.PassWord,dbName,1,2)
 			if err != nil {
-				return ms_instance,err
+				return msInstance,err
 			}
-			return ms_instance, nil
+			return msInstance, nil
 		}
 	}
-	return ms_instance,nil
+	return msInstance,nil
 }
 
 // 获取默认的db
