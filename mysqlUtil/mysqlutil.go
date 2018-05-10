@@ -15,13 +15,23 @@ var GlobalMysqlUtil MysqlUtil
 
 func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int,MaxOpenConns int) error {
 	dataSourceNameFormat := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",user,passwd,host,port,databases)
-	//println(dataSourceNameFormat)
+	println(dataSourceNameFormat)
 	mu.db, _ = sql.Open("mysql", dataSourceNameFormat)
 	mu.db.SetMaxIdleConns(maxIdleConns)
 	mu.db.SetMaxOpenConns(MaxOpenConns)
 	//mu.db.Close()
 	err := mu.db.Ping()
 	return err
+}
+func (mu *MysqlUtil) InitMySqlUtilByDb(db *sql.DB) error {
+	mu.db = db
+	err := db.Ping()
+	return err
+}
+
+// 判断是否初始化
+func (mu *MysqlUtil) IsInit() bool {
+	return mu.db != nil
 }
 
 func (mu *MysqlUtil) IsAlive() bool  {
@@ -43,7 +53,7 @@ func (mu *MysqlUtil) InitMySqlUtilDetail(host string, port int, user string, pas
 }
 
 func (mu *MysqlUtil) InitMySqlUtil(host string, port int, user string, passwd string, databases string) error {
-	return mu.initMySqlUtil(host,port,user,passwd,databases,0,0)
+	return mu.initMySqlUtil(host,port,user,passwd,databases,0,1)
 }
 
 
@@ -70,11 +80,11 @@ func (mu *MysqlUtil) InsertId(prepareSql string, args ...interface{}) (int64,err
 	if err != nil {
 		return 0,err
 	}
-	last_id,err := re.LastInsertId()
+	lastId,err := re.LastInsertId()
 	if err != nil {
 		return 0,err
 	}
-	return last_id,nil
+	return lastId,nil
 }
 
 func (mu *MysqlUtil) Exec(prepareSql string, args ...interface{}) error {
