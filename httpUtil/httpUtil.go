@@ -21,6 +21,12 @@ func GetWebConFromUrl(url string) (string, error) {
 	return getContentFromResponse(response)
 }
 
+// get http.Response from url
+func GetWebResponseFromUrl(url string) (*http.Response,error)  {
+	return DoRequest(url, nil, "GET", nil, 10*1000)
+
+}
+
 //GetWebConFromUrlWithAllArgs get web content
 //with some args
 func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (string, error) {

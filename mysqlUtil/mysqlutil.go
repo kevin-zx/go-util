@@ -155,18 +155,21 @@ func (mu *MysqlUtil) Select(prepareSql string, args ...interface{}) ([][]sql.Raw
 func (mu *MysqlUtil) SelectAll(sqlstr string, args ...interface{}) (*[]map[string]string, error) {
 	stmtOut, err := mu.db.Prepare(sqlstr)
 	if err != nil {
-		panic(err.Error())
+		//panic(err.Error())
+		return nil,err
 	}
 	defer stmtOut.Close()
 
 	rows, err := stmtOut.Query(args...)
 	if err != nil {
-		panic(err.Error())
+		//panic(err.Error())
+		return nil,err
 	}
 
 	columns, err := rows.Columns()
 	if err != nil {
-		panic(err.Error())
+		//panic(err.Error())
+		return nil,err
 	}
 
 	values := make([]sql.RawBytes, len(columns))
@@ -180,7 +183,8 @@ func (mu *MysqlUtil) SelectAll(sqlstr string, args ...interface{}) (*[]map[strin
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			panic(err.Error())
+			//panic(err.Error())
+			return nil,err
 		}
 		var value string
 		vmap := make(map[string]string, len(scanArgs))
