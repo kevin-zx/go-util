@@ -9,6 +9,8 @@ import (
 
 	"crypto/tls"
 	"net/http/cookiejar"
+
+	"net/url"
 )
 
 //GetWebConFromUrl simply get web content
@@ -101,4 +103,8 @@ func DoRequest(url string, headerMap map[string]string, method string, postData 
 	}
 
 	return client.Do(req)
+}
+
+func URLEncode(keyword string) (string)  {
+	return url.QueryEscape(keyword)
 }

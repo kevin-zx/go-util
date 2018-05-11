@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 	"time"
+	"log"
 )
 
 func testGetWebConFromUrl(t testing.T) {
@@ -63,5 +64,17 @@ func testGetWebConFromUrlWithAllArgs(t testing.T) {
 	}
 	if len(content) == 0 {
 		t.Error("get empty web content")
+	}
+
+
+}
+
+func TestURLEncode(t *testing.T) {
+	decodeString := URLEncode("安瓶")
+	if decodeString != "%E5%AE%89%E7%93%B6" {
+		log.Println(decodeString)
+		t.Fail()
+	}else{
+		println(decodeString)
 	}
 }
