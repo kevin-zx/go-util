@@ -14,6 +14,10 @@ type MysqlUtil struct {
 var GlobalMysqlUtil MysqlUtil
 
 func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int,MaxOpenConns int) error {
+	// 避免重复调用
+	if mu.db != nil{
+		mu.Close()
+	}
 	dataSourceNameFormat := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",user,passwd,host,port,databases)
 	println(dataSourceNameFormat)
 	mu.db, _ = sql.Open("mysql", dataSourceNameFormat)
