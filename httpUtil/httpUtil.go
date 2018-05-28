@@ -16,7 +16,7 @@ import (
 //GetWebConFromUrl simply get web content
 //from net
 func GetWebConFromUrl(url string) (string, error) {
-	response, err := DoRequest(url, nil, "GET", nil, 10*1000)
+	response, err := doRequest(url, nil, "GET", nil, 10*1000,"")
 	if err != nil {
 		return "", err
 	}
@@ -25,14 +25,14 @@ func GetWebConFromUrl(url string) (string, error) {
 
 // get http.Response from url
 func GetWebResponseFromUrl(url string) (*http.Response,error)  {
-	return DoRequest(url, nil, "GET", nil, 10*1000)
+	return doRequest(url, nil, "GET", nil, 10*1000,"")
 
 }
 
 //GetWebConFromUrlWithAllArgs get web content
 //with some args
 func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (string, error) {
-	response, err := DoRequest(url, headerMap, method, postData, timeOut)
+	response, err := doRequest(url, headerMap, method, postData, timeOut,"")
 	if err != nil {
 		return "", err
 	}
@@ -42,7 +42,7 @@ func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method
 //GetWebConFromUrlWithHeader get web con from target url
 //param headerMap is some header info
 func GetWebConFromUrlWithHeader(url string, headerMap map[string]string) (string, error) {
-	response, err := DoRequest(url, headerMap, "GET", nil, 10*1000)
+	response, err := doRequest(url, headerMap, "GET", nil, 10*1000,"")
 	if err != nil {
 		return "", err
 	}
@@ -67,18 +67,29 @@ func getContentFromResponse(response *http.Response) (string, error) {
 	return string(c), nil
 }
 
-func DoRequest(url string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (*http.Response, error) {
+func SendRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (*http.Response, error){
+	return doRequest(targetUrl,headerMap,method,postData,timeOut,"")
+}
+
+func doRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration,proxy string) (*http.Response, error) {
+
 	timeout := time.Duration(timeOut * time.Millisecond)
 	//https认证
 	tr := &http.Transport{
 		TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
 		DisableCompression: true,
-	}
 
+	}
+	if proxy != ""{
+		urli := url.URL{}
+		urlProxy, _ := urli.Parse(proxy)
+		tr.Proxy = http.ProxyURL(urlProxy)
+	}
 	client := http.Client{
 		Timeout: timeout,
 		Transport: tr,
 	}
+
 	client.Jar, _ = cookiejar.New(nil)
 	method = strings.ToUpper(method)
 	var req *http.Request
@@ -86,13 +97,13 @@ func DoRequest(url string, headerMap map[string]string, method string, postData 
 	if postData != nil && method == "POST" {
 		//print(string(postData))
 
-		req, err = http.NewRequest(method, url, bytes.NewReader(postData))
+		req, err = http.NewRequest(method, targetUrl, bytes.NewReader(postData))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		req, err = http.NewRequest(method, url, nil)
+		req, err = http.NewRequest(method, targetUrl, nil)
 		if err != nil {
 			return nil, err
 		}
