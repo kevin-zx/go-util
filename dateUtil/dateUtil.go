@@ -35,7 +35,10 @@ func GetDeltaDate(d time.Duration) string  {
 //从日期字符串格式转化成time.Time格式
 func DateStr2Date(dateStr string) (targetTime time.Time,err error) {
 	loc,err := time.LoadLocation("Local")
-	return time.Time{},err
+	if err != nil{
+		return time.Time{},err
+	}
+
 	targetTime,err = time.ParseInLocation(stand_date_time_format,dateStr,loc)
 	return
 
