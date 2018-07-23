@@ -20,7 +20,7 @@ func GetWebConFromUrl(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return getContentFromResponse(response)
+	return GetContentFromResponse(response)
 }
 
 // get http.Response from url
@@ -36,7 +36,7 @@ func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method
 	if err != nil {
 		return "", err
 	}
-	return getContentFromResponse(response)
+	return GetContentFromResponse(response)
 }
 
 //GetWebConFromUrlWithHeader get web con from target url
@@ -46,10 +46,10 @@ func GetWebConFromUrlWithHeader(url string, headerMap map[string]string) (string
 	if err != nil {
 		return "", err
 	}
-	return getContentFromResponse(response)
+	return GetContentFromResponse(response)
 }
 
-func getContentFromResponse(response *http.Response) (string, error) {
+func GetContentFromResponse(response *http.Response) (string, error) {
 	defer response.Body.Close()
 	var c []byte
 	for {
