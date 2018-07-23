@@ -94,7 +94,8 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 	method = strings.ToUpper(method)
 	var req *http.Request
 	var err error
-	if postData != nil && method == "POST" {
+
+	if postData != nil && (method == "POST" || method == "PUT") {
 		//print(string(postData))
 
 		req, err = http.NewRequest(method, targetUrl, bytes.NewReader(postData))
