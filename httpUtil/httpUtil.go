@@ -11,6 +11,12 @@ import (
 	"net/http/cookiejar"
 
 	"net/url"
+	"bufio"
+	"golang.org/x/net/html/charset"
+	"github.com/axgle/mahonia"
+	"io/ioutil"
+	"errors"
+	"fmt"
 )
 
 //GetWebConFromUrl simply get web content
@@ -26,6 +32,11 @@ func GetWebConFromUrl(url string) (string, error) {
 // get http.Response from url
 func GetWebResponseFromUrl(url string) (*http.Response,error)  {
 	return doRequest(url, nil, "GET", nil, 10*1000,"")
+
+}
+
+func GetWebResponseFromUrlWithHeader(url string,headerMap map[string]string,) (*http.Response,error)  {
+	return doRequest(url, headerMap, "GET", nil, 10*1000,"")
 
 }
 
@@ -71,13 +82,20 @@ func SendRequest(targetUrl string, headerMap map[string]string, method string, p
 	return doRequest(targetUrl,headerMap,method,postData,timeOut,"")
 }
 
+func SendRequestWithProxy(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration,proxy string) (*http.Response, error){
+	return doRequest(targetUrl,headerMap,method,postData,timeOut,proxy)
+}
+
 func doRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration,proxy string) (*http.Response, error) {
 
 	timeout := time.Duration(timeOut * time.Millisecond)
+	//urli := url.URL{}
+	//urlproxy, _ := urli.Parse("https://127.0.0.1:9743")
 	//https认证
 	tr := &http.Transport{
 		TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
 		DisableCompression: true,
+		//Proxy:http.ProxyURL(urlproxy),
 
 	}
 	if proxy != ""{
@@ -118,4 +136,33 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 
 func URLEncode(keyword string) (string)  {
 	return url.QueryEscape(keyword)
+}
+
+// 这里他娘的Peek是针对Reader的 针对不了io.Reader 所以 io.Reader其实是进行了位移的
+func detectContentCharset(body io.Reader) (string,*bufio.Reader) {
+	r := bufio.NewReader(body)
+	if data, err := r.Peek(1024); err == nil {
+		if _, name, _ := charset.DetermineEncoding(data, ""); name!="" {
+			return name,r
+		}
+	}
+	return "utf-8",r
+}
+func ReadContentFromResponse(response *http.Response) (string, error) {
+	defer response.Body.Close()
+	if  response.StatusCode >= 300 || response.StatusCode < 200   {
+		return "",errors.New(fmt.Sprintf("状态码为: %d",response.StatusCode))
+	}
+	char,data := detectContentCharset(response.Body)
+	if data == nil {
+		return "",errors.New("数据为空")
+	}
+
+	dec := mahonia.NewDecoder(char)
+	preRd := dec.NewReader(data)
+	preBytes,err := ioutil.ReadAll(preRd)
+	if err != nil {
+		return "",err
+	}
+	return string(preBytes),err
 }
