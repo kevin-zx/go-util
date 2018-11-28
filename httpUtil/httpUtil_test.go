@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 	"log"
+	"fmt"
 )
 
 func testGetWebConFromUrl(t testing.T) {
@@ -77,4 +78,12 @@ func TestURLEncode(t *testing.T) {
 	}else{
 		println(decodeString)
 	}
+}
+
+func TestSendRequestWithProxy(t *testing.T) {
+	re,err :=SendRequestWithProxy("https://www.baidu.com",map[string]string{},"GET",nil,10*time.Second,"socks5://127.0.0.1:2080")
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(re.StatusCode)
 }

@@ -91,6 +91,7 @@ func (mu *MysqlUtil) InsertId(prepareSql string, args ...interface{}) (int64,err
 		return 0,err
 	}
 	lastId,err := re.LastInsertId()
+
 	if err != nil {
 		return 0,err
 	}
