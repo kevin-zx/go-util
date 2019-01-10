@@ -39,6 +39,9 @@ func (mu *MysqlUtil) IsInit() bool {
 }
 
 func (mu *MysqlUtil) IsAlive() bool  {
+	if mu.db == nil {
+		return false
+	}
 	err := mu.db.Ping()
 	if err != nil {
 		mu.Close()
@@ -48,6 +51,9 @@ func (mu *MysqlUtil) IsAlive() bool  {
 }
 
 func (mu *MysqlUtil) Close() error {
+	if mu.db == nil {
+		return nil
+	}
 	err := mu.db.Close()
 	return err
 }

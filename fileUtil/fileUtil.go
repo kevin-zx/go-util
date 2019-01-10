@@ -18,6 +18,14 @@ func CheckFileIsExist(fileName string) bool {
 	return exist
 }
 
+func CheckPathIsExist(pathName string) bool {
+	var exist = true
+	_,err := os.Stat(pathName)
+	if err != nil && os.IsNotExist(err) {
+		exist = false
+	}
+	return exist
+}
 
 
 //写入数据到文件返回写入文件得字长
