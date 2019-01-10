@@ -22,7 +22,7 @@ import (
 //GetWebConFromUrl simply get web content
 //from net
 func GetWebConFromUrl(url string) (string, error) {
-	response, err := doRequest(url, nil, "GET", nil, 10*1000,"")
+	response, err := doRequest(url, nil, "GET", nil, 10*time.Second,"")
 	if err != nil {
 		return "", err
 	}
@@ -31,12 +31,12 @@ func GetWebConFromUrl(url string) (string, error) {
 
 // get http.Response from url
 func GetWebResponseFromUrl(url string) (*http.Response,error)  {
-	return doRequest(url, nil, "GET", nil, 10*1000,"")
+	return doRequest(url, nil, "GET", nil, 10*time.Second,"")
 
 }
 
 func GetWebResponseFromUrlWithHeader(url string,headerMap map[string]string,) (*http.Response,error)  {
-	return doRequest(url, headerMap, "GET", nil, 10*1000,"")
+	return doRequest(url, headerMap, "GET", nil, 60*time.Second,"")
 
 }
 
@@ -53,11 +53,11 @@ func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method
 //GetWebConFromUrlWithHeader get web con from target url
 //param headerMap is some header info
 func GetWebConFromUrlWithHeader(url string, headerMap map[string]string) (string, error) {
-	response, err := doRequest(url, headerMap, "GET", nil, 10*1000,"")
+	response, err := doRequest(url, headerMap, "GET", nil, 10*time.Second,"")
 	if err != nil {
 		return "", err
 	}
-	return getContentFromResponse(response)
+	return ReadContentFromResponse(response)
 }
 
 func getContentFromResponse(response *http.Response) (string, error) {
@@ -88,7 +88,7 @@ func SendRequestWithProxy(targetUrl string, headerMap map[string]string, method 
 
 func doRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration,proxy string) (*http.Response, error) {
 
-	timeout := time.Duration(timeOut * time.Millisecond)
+	//timeOut = time.Duration(timeOut * time.Millisecond)
 	//urli := url.URL{}
 	//urlproxy, _ := urli.Parse("https://127.0.0.1:9743")
 	//https认证
@@ -104,7 +104,7 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 		tr.Proxy = http.ProxyURL(urlProxy)
 	}
 	client := http.Client{
-		Timeout: timeout,
+		Timeout: timeOut,
 		Transport: tr,
 	}
 
