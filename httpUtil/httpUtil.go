@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	"errors"
 	"fmt"
+	"compress/gzip"
 )
 
 //GetWebConFromUrl simply get web content
@@ -62,20 +63,21 @@ func GetWebConFromUrlWithHeader(url string, headerMap map[string]string) (string
 
 func GetContentFromResponse(response *http.Response) (string, error) {
 	defer response.Body.Close()
-	var c []byte
-	for {
-		buf := make([]byte, 1024)
-		n, err := response.Body.Read(buf)
-		if n == 0 {
-			break
-		}
-		if err != nil && err != io.EOF {
-			return "", err
-		}
-
-		c = append(c, buf[0:n]...)
+	if  response.StatusCode >= 300 || response.StatusCode < 200   {
+		return "",errors.New(fmt.Sprintf("状态码为: %d",response.StatusCode))
 	}
-	return string(c), nil
+	char,data := detectContentCharset(response.Body)
+	if data == nil {
+		return "",errors.New("数据为空")
+	}
+
+	dec := mahonia.NewDecoder(char)
+	preRd := dec.NewReader(data)
+	preBytes,err := ioutil.ReadAll(preRd)
+	if err != nil {
+		return "",err
+	}
+	return string(preBytes),err
 }
 
 func SendRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (*http.Response, error){
@@ -149,12 +151,41 @@ func detectContentCharset(body io.Reader) (string,*bufio.Reader) {
 	}
 	return "utf-8",r
 }
-func ReadContentFromResponse(response *http.Response) (string, error) {
+func ReadContentFromResponse(response *http.Response,charset string) (string, error) {
 	defer response.Body.Close()
+	var err error
+	var htmlbytes []byte
+	if response.Header["Content-Encoding"][0] == "gzip"  {
+		gzreader,err := gzip.NewReader(response.Body)
+		if err != nil {
+			return "",err
+		}
+		for{
+			buf := make([]byte,1024)
+			n,err := gzreader.Read(buf)
+			if err != nil && err != io.EOF {
+				return "",err
+			}
+			if n == 0 {
+				break
+			}
+			htmlbytes = append(htmlbytes,buf...)
+		}
+		//htmlbytes,err=ioutil.ReadAll(gzreader)
+		//println(string(htmlbytes))
+	}else{
+		htmlbytes,err=ioutil.ReadAll(response.Body)
+	}
+	//response.Body = reader
+
 	if  response.StatusCode >= 300 || response.StatusCode < 200   {
 		return "",errors.New(fmt.Sprintf("状态码为: %d",response.StatusCode))
 	}
-	char,data := detectContentCharset(response.Body)
+	hreader := bytes.NewReader(htmlbytes)
+	char,data := detectContentCharset(hreader)
+	if charset != "" {
+		char = charset
+	}
 	if data == nil {
 		return "",errors.New("数据为空")
 	}
@@ -162,8 +193,9 @@ func ReadContentFromResponse(response *http.Response) (string, error) {
 	dec := mahonia.NewDecoder(char)
 	preRd := dec.NewReader(data)
 	preBytes,err := ioutil.ReadAll(preRd)
+	reBytes,err := ioutil.ReadAll(hreader)
 	if err != nil {
 		return "",err
 	}
-	return string(preBytes),err
+	return string(append(preBytes,reBytes...)),err
 }
