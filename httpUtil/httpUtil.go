@@ -155,7 +155,8 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 	defer response.Body.Close()
 	var err error
 	var htmlbytes []byte
-	if response.Header["Content-Encoding"][0] == "gzip" {
+	contentEncoding, ok := response.Header["Content-Encoding"]
+	if ok && contentEncoding[0] == "gzip" {
 		gzreader, err := gzip.NewReader(response.Body)
 		if err != nil {
 			return "", err
