@@ -10,20 +10,20 @@ import (
 	"crypto/tls"
 	"net/http/cookiejar"
 
-	"net/url"
 	"bufio"
-	"golang.org/x/net/html/charset"
-	"github.com/axgle/mahonia"
-	"io/ioutil"
+	"compress/gzip"
 	"errors"
 	"fmt"
-	"compress/gzip"
+	"github.com/axgle/mahonia"
+	"golang.org/x/net/html/charset"
+	"io/ioutil"
+	"net/url"
 )
 
 //GetWebConFromUrl simply get web content
 //from net
 func GetWebConFromUrl(url string) (string, error) {
-	response, err := doRequest(url, nil, "GET", nil, 10*time.Second,"")
+	response, err := doRequest(url, nil, "GET", nil, 10*time.Second, "")
 	if err != nil {
 		return "", err
 	}
@@ -31,20 +31,20 @@ func GetWebConFromUrl(url string) (string, error) {
 }
 
 // get http.Response from url
-func GetWebResponseFromUrl(url string) (*http.Response,error)  {
-	return doRequest(url, nil, "GET", nil, 10*time.Second,"")
+func GetWebResponseFromUrl(url string) (*http.Response, error) {
+	return doRequest(url, nil, "GET", nil, 10*time.Second, "")
 
 }
 
-func GetWebResponseFromUrlWithHeader(url string,headerMap map[string]string,) (*http.Response,error)  {
-	return doRequest(url, headerMap, "GET", nil, 60*time.Second,"")
+func GetWebResponseFromUrlWithHeader(url string, headerMap map[string]string) (*http.Response, error) {
+	return doRequest(url, headerMap, "GET", nil, 60*time.Second, "")
 
 }
 
 //GetWebConFromUrlWithAllArgs get web content
 //with some args
 func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (string, error) {
-	response, err := doRequest(url, headerMap, method, postData, timeOut,"")
+	response, err := doRequest(url, headerMap, method, postData, timeOut, "")
 	if err != nil {
 		return "", err
 	}
@@ -54,41 +54,41 @@ func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method
 //GetWebConFromUrlWithHeader get web con from target url
 //param headerMap is some header info
 func GetWebConFromUrlWithHeader(url string, headerMap map[string]string) (string, error) {
-	response, err := doRequest(url, headerMap, "GET", nil, 10*time.Second,"")
+	response, err := doRequest(url, headerMap, "GET", nil, 10*time.Second, "")
 	if err != nil {
 		return "", err
 	}
-	return ReadContentFromResponse(response)
+	return ReadContentFromResponse(response, "")
 }
 
 func GetContentFromResponse(response *http.Response) (string, error) {
 	defer response.Body.Close()
-	if  response.StatusCode >= 300 || response.StatusCode < 200   {
-		return "",errors.New(fmt.Sprintf("状态码为: %d",response.StatusCode))
+	if response.StatusCode >= 300 || response.StatusCode < 200 {
+		return "", errors.New(fmt.Sprintf("状态码为: %d", response.StatusCode))
 	}
-	char,data := detectContentCharset(response.Body)
+	char, data := detectContentCharset(response.Body)
 	if data == nil {
-		return "",errors.New("数据为空")
+		return "", errors.New("数据为空")
 	}
 
 	dec := mahonia.NewDecoder(char)
 	preRd := dec.NewReader(data)
-	preBytes,err := ioutil.ReadAll(preRd)
+	preBytes, err := ioutil.ReadAll(preRd)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	return string(preBytes),err
+	return string(preBytes), err
 }
 
-func SendRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (*http.Response, error){
-	return doRequest(targetUrl,headerMap,method,postData,timeOut,"")
+func SendRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration) (*http.Response, error) {
+	return doRequest(targetUrl, headerMap, method, postData, timeOut, "")
 }
 
-func SendRequestWithProxy(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration,proxy string) (*http.Response, error){
-	return doRequest(targetUrl,headerMap,method,postData,timeOut,proxy)
+func SendRequestWithProxy(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration, proxy string) (*http.Response, error) {
+	return doRequest(targetUrl, headerMap, method, postData, timeOut, proxy)
 }
 
-func doRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration,proxy string) (*http.Response, error) {
+func doRequest(targetUrl string, headerMap map[string]string, method string, postData []byte, timeOut time.Duration, proxy string) (*http.Response, error) {
 
 	//timeOut = time.Duration(timeOut * time.Millisecond)
 	//urli := url.URL{}
@@ -100,13 +100,13 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 		//Proxy:http.ProxyURL(urlproxy),
 
 	}
-	if proxy != ""{
+	if proxy != "" {
 		urli := url.URL{}
 		urlProxy, _ := urli.Parse(proxy)
 		tr.Proxy = http.ProxyURL(urlProxy)
 	}
 	client := http.Client{
-		Timeout: timeOut,
+		Timeout:   timeOut,
 		Transport: tr,
 	}
 
@@ -137,65 +137,65 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 	return client.Do(req)
 }
 
-func URLEncode(keyword string) (string)  {
+func URLEncode(keyword string) string {
 	return url.QueryEscape(keyword)
 }
 
 // 这里他娘的Peek是针对Reader的 针对不了io.Reader 所以 io.Reader其实是进行了位移的
-func detectContentCharset(body io.Reader) (string,*bufio.Reader) {
+func detectContentCharset(body io.Reader) (string, *bufio.Reader) {
 	r := bufio.NewReader(body)
 	if data, err := r.Peek(1024); err == nil {
-		if _, name, _ := charset.DetermineEncoding(data, ""); name!="" {
-			return name,r
+		if _, name, _ := charset.DetermineEncoding(data, ""); name != "" {
+			return name, r
 		}
 	}
-	return "utf-8",r
+	return "utf-8", r
 }
-func ReadContentFromResponse(response *http.Response,charset string) (string, error) {
+func ReadContentFromResponse(response *http.Response, charset string) (string, error) {
 	defer response.Body.Close()
 	var err error
 	var htmlbytes []byte
-	if response.Header["Content-Encoding"][0] == "gzip"  {
-		gzreader,err := gzip.NewReader(response.Body)
+	if response.Header["Content-Encoding"][0] == "gzip" {
+		gzreader, err := gzip.NewReader(response.Body)
 		if err != nil {
-			return "",err
+			return "", err
 		}
-		for{
-			buf := make([]byte,1024)
-			n,err := gzreader.Read(buf)
+		for {
+			buf := make([]byte, 1024)
+			n, err := gzreader.Read(buf)
 			if err != nil && err != io.EOF {
-				return "",err
+				return "", err
 			}
 			if n == 0 {
 				break
 			}
-			htmlbytes = append(htmlbytes,buf...)
+			htmlbytes = append(htmlbytes, buf...)
 		}
 		//htmlbytes,err=ioutil.ReadAll(gzreader)
 		//println(string(htmlbytes))
-	}else{
-		htmlbytes,err=ioutil.ReadAll(response.Body)
+	} else {
+		htmlbytes, err = ioutil.ReadAll(response.Body)
 	}
 	//response.Body = reader
 
-	if  response.StatusCode >= 300 || response.StatusCode < 200   {
-		return "",errors.New(fmt.Sprintf("状态码为: %d",response.StatusCode))
+	if response.StatusCode >= 300 || response.StatusCode < 200 {
+		return "", errors.New(fmt.Sprintf("状态码为: %d", response.StatusCode))
 	}
 	hreader := bytes.NewReader(htmlbytes)
-	char,data := detectContentCharset(hreader)
+	char, data := detectContentCharset(hreader)
 	if charset != "" {
 		char = charset
 	}
 	if data == nil {
-		return "",errors.New("数据为空")
+		return "", errors.New("数据为空")
 	}
 
 	dec := mahonia.NewDecoder(char)
 	preRd := dec.NewReader(data)
-	preBytes,err := ioutil.ReadAll(preRd)
-	reBytes,err := ioutil.ReadAll(hreader)
+	preBytes, err := ioutil.ReadAll(preRd)
+	reBytes, err := ioutil.ReadAll(hreader)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	return string(append(preBytes,reBytes...)),err
+	return string(append(preBytes, reBytes...)), err
 }
