@@ -77,8 +77,8 @@ func RemoveFileDuplicateLine(fileName string) (err error) {
 	lineMap := make(map[string]int)
 	for {
 		line, err := fr.ReadString('\n')
-		if err == io.EOF {
-			break
+		if err != nil && err != io.EOF {
+			return
 		}
 		if _, ok := lineMap[line]; !ok {
 			_, err = fw.WriteString(line + "\n")
@@ -87,6 +87,10 @@ func RemoveFileDuplicateLine(fileName string) (err error) {
 			}
 			lineMap[line] = 1
 		}
+		if err != nil {
+			break
+		}
+
 	}
 	err = fw.Flush()
 	return
