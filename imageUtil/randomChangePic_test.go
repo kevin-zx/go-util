@@ -21,10 +21,10 @@ func TestRandomResize(t *testing.T) {
 	}
 	for _, d := range dirs {
 		fmt.Println(d.Name())
-		img := loadImage(testDataPath + d.Name())
+		img := LoadImage(testDataPath + d.Name())
 		img = RandomResize(img)
 		img = RandomFilter(img)
-		saveImage(testDataPath+"r_"+d.Name(), RandomResize(img))
+		SaveImage(testDataPath+"r_"+d.Name(), RandomResize(img))
 	}
 	//
 }

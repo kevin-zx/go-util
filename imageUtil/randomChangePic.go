@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func loadImage(filename string) image.Image {
+func LoadImage(filename string) image.Image {
 	f, err := os.Open(filename)
 	if err != nil {
 		log.Fatalf("os.Open failed: %v", err)
@@ -23,7 +23,7 @@ func loadImage(filename string) image.Image {
 	return img
 }
 
-func saveImage(filename string, img image.Image) {
+func SaveImage(filename string, img image.Image) {
 	f, err := os.Create(filename)
 	if err != nil {
 		log.Fatalf("os.Create failed: %v", err)
