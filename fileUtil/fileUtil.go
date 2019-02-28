@@ -66,22 +66,26 @@ func check(e error) {
 	}
 }
 
+// 按行移除文件内的重复行
 func RemoveFileDuplicateLine(fileName string) (err error) {
-	f, err := os.Open(fileName)
+	f, err := os.OpenFile(fileName, os.O_RDWR, os.ModePerm)
+	fBak, err := os.Create(fileName + ".bak")
+
 	if err != nil {
 		return
 	}
-	defer f.Close()
 	fr := bufio.NewReader(f)
-	fw := bufio.NewWriter(f)
+	fw := bufio.NewWriter(fBak)
 	lineMap := make(map[string]int)
 	for {
-		line, err := fr.ReadString('\n')
+		line := ""
+		line, err = fr.ReadString('\n')
 		if err != nil && err != io.EOF {
 			return
 		}
+
 		if _, ok := lineMap[line]; !ok {
-			_, err = fw.WriteString(line + "\n")
+			_, err = fw.WriteString(line)
 			if err != nil {
 				return
 			}
@@ -90,8 +94,18 @@ func RemoveFileDuplicateLine(fileName string) (err error) {
 		if err != nil {
 			break
 		}
-
 	}
 	err = fw.Flush()
+	if err != nil {
+		return
+	}
+	_ = fBak.Close()
+	_ = f.Close()
+	err = os.Remove(fileName)
+	if err != nil {
+		return
+	}
+	err = os.Rename(fileName+".bak", fileName)
+
 	return
 }
