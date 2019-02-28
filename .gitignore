@@ -2,3 +2,6 @@
 /.ideal
 *.exe*
 .idea
+
+# 忽略 go.sum
+go.sum
