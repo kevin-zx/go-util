@@ -2,14 +2,14 @@ package httpUtil
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"testing"
 	"time"
-	"log"
-	"fmt"
 )
 
 func testGetWebConFromUrl(t testing.T) {
-	content, err := GetWebConFromUrl("https://www.baidu.com")
+	content, err := GetWebConFromUrl("https://www.whcyzx.cn")
 	if err != nil {
 		t.Error(err)
 	}
@@ -17,6 +17,16 @@ func testGetWebConFromUrl(t testing.T) {
 		t.Error("get empty web content")
 	}
 
+}
+
+func TestGetWebConFromUrl(t *testing.T) {
+	content, err := GetWebConFromUrl("http://www.whcyzx.cn")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(content) == 0 {
+		t.Error("get empty web content")
+	}
 }
 
 func testGetWebConFromUrlWithHeader(t testing.T) {
@@ -67,7 +77,6 @@ func testGetWebConFromUrlWithAllArgs(t testing.T) {
 		t.Error("get empty web content")
 	}
 
-
 }
 
 func TestURLEncode(t *testing.T) {
@@ -75,13 +84,13 @@ func TestURLEncode(t *testing.T) {
 	if decodeString != "%E5%AE%89%E7%93%B6" {
 		log.Println(decodeString)
 		t.Fail()
-	}else{
+	} else {
 		println(decodeString)
 	}
 }
 
 func TestSendRequestWithProxy(t *testing.T) {
-	re,err :=SendRequestWithProxy("https://www.baidu.com",map[string]string{},"GET",nil,10*time.Second,"socks5://127.0.0.1:2080")
+	re, err := SendRequestWithProxy("https://www.baidu.com", map[string]string{}, "GET", nil, 10*time.Second, "socks5://127.0.0.1:2080")
 	if err != nil {
 		t.Error(err)
 	}
