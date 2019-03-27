@@ -20,7 +20,12 @@ func testGetWebConFromUrl(t testing.T) {
 }
 
 func TestGetWebConFromUrl(t *testing.T) {
-	content, err := GetWebConFromUrl("http://www.whcyzx.cn")
+	//m.daishibuxi.cn
+	reponse, err := GetWebResponseFromUrl("http://www.whcyzx.cn")
+	if err != nil {
+		t.Error(err)
+	}
+	content, err := ReadContentFromResponse(reponse, "utf-8")
 	if err != nil {
 		t.Error(err)
 	}
