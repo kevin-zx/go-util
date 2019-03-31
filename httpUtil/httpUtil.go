@@ -193,6 +193,9 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 
 	dec := mahonia.NewDecoder(char)
 	preRd := dec.NewReader(data)
+	if preRd == nil {
+		return "", errors.New("读取头部文件为空")
+	}
 	preBytes, err := ioutil.ReadAll(preRd)
 	reBytes, err := ioutil.ReadAll(hreader)
 	if err != nil {
