@@ -6,27 +6,33 @@ import (
 	"github.com/kevin-zx/go-util/dateUtil"
 	"github.com/kevin-zx/go-util/mysqlUtil"
 	"strconv"
+	"sync"
 	"time"
 	//"sync"
 	"log"
 )
 
-//var muLock = new(sync.Mutex)
-
-const (
-	LANMYSQLHOST = "10.105.72.2"
-	MYSQLHOST    = "182.254.155.218"
-)
-
 type WdRequest struct {
 	Header        map[string]string
 	mu            mysqlutil.MysqlUtil
+	mux           sync.Mutex
 	Redirect      int
 	Single        int
 	ConcurrentNum int
 	StoreType     int
 	ContentType   int
 	isLan         bool
+	mysqlConfig   mysqlConfig
+}
+
+type mysqlConfig struct {
+	mysqlHost    string
+	mysqlPort    int
+	mysqlUser    string
+	mysqlPasswd  string
+	mysqlDb      string
+	axIdleConns  int
+	maxOpenConns int
 }
 
 type WdResponse struct {
@@ -63,6 +69,7 @@ func (wc *WdRequest) SendRequest(targetUrl string, header *map[string]string) er
 	return nil
 
 }
+
 func (wc *WdRequest) ExistURL(targetUrl string) (bool, error) {
 	data, err := wc.mu.SelectAll("SELECT * FROM urls_16 where `md5` = md5(?) AND type=? AND status !=3 LIMIT 1", targetUrl, wc.ContentType)
 	if err != nil {
@@ -73,37 +80,20 @@ func (wc *WdRequest) ExistURL(targetUrl string) (bool, error) {
 }
 
 //port 1 pc 2 mobile
-func NewWdRequest(port int) *WdRequest {
+func NewWdRequest(port int, mysqlHost string, mysqlPort int, mysqlUser string, mysqlPasswd string, mysqlDb string, axIdleConns int, maxOpenConns int) *WdRequest {
+	mysqlConfig := mysqlConfig{mysqlHost: mysqlHost, mysqlPort: mysqlPort, mysqlUser: mysqlUser, mysqlPasswd: mysqlPasswd, mysqlDb: mysqlDb, axIdleConns: axIdleConns, maxOpenConns: maxOpenConns}
 	header := make(map[string]string)
 	mu := mysqlutil.MysqlUtil{}
-	err := mu.InitMySqlUtilDetail(MYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 2, 10)
+	err := mu.InitMySqlUtilDetail(mysqlConfig.mysqlHost, mysqlConfig.mysqlPort, mysqlConfig.mysqlUser, mysqlConfig.mysqlPasswd, mysqlConfig.mysqlDb, mysqlConfig.axIdleConns, mysqlConfig.maxOpenConns)
 	if err != nil {
 		panic(err)
 	}
 	if port == 1 {
 		header["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36"
-
 	} else {
 		header["User-Agent"] = "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Mobile Safari/537.36"
 	}
-	return &WdRequest{Header: header, mu: mu, Redirect: 1, Single: 0, ConcurrentNum: 0, StoreType: 1, ContentType: 1, isLan: false}
-}
-
-func NewWdRequestLAN(port int) *WdRequest {
-
-	header := make(map[string]string)
-	mu := mysqlutil.MysqlUtil{}
-	err := mu.InitMySqlUtilDetail(LANMYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 2, 10)
-	if err != nil {
-		panic(err)
-	}
-	if port == 1 {
-		header["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36"
-
-	} else {
-		header["User-Agent"] = "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Mobile Safari/537.36"
-	}
-	return &WdRequest{Header: header, mu: mu, Redirect: 1, Single: 0, ConcurrentNum: 0, StoreType: 1, ContentType: 1, isLan: true}
+	return &WdRequest{Header: header, mu: mu, Redirect: 1, Single: 0, ConcurrentNum: 0, StoreType: 1, ContentType: 1, isLan: false, mysqlConfig: mysqlConfig}
 }
 
 func (wc *WdRequest) RestMysqlConnection() error {
@@ -114,13 +104,8 @@ func (wc *WdRequest) RestMysqlConnection() error {
 	wc.mu.Close()
 
 	mu := mysqlutil.MysqlUtil{}
-	if wc.isLan {
-		err = mu.InitMySqlUtilDetail(LANMYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 2, 10)
-
-	} else {
-		err = mu.InitMySqlUtilDetail(MYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 2, 10)
-
-	}
+	mysqlConfig := wc.mysqlConfig
+	err = mu.InitMySqlUtilDetail(mysqlConfig.mysqlHost, mysqlConfig.mysqlPort, mysqlConfig.mysqlUser, mysqlConfig.mysqlPasswd, mysqlConfig.mysqlDb, mysqlConfig.axIdleConns, mysqlConfig.maxOpenConns)
 	if err != nil {
 		return err
 	}
@@ -166,14 +151,13 @@ func (wc *WdRequest) GetContent(targetUrl string) *WdResponse {
 
 // sysc get content, every retryTime will sleeping 1 min
 // 同步的获取内容，retryTime 代表重试次数，每次会等待1分钟
-func (wc *WdRequest) SyncGet(targetUrl string, retryTime int) *WdResponse {
-	//HACK: 这里的实现方式非常粗糙 todo:换一种实现方式
+func (wc *WdRequest) SyncGet(targetUrl string, retryTime int) (*WdResponse, error) {
 	return wc.SyncGetWithHeader(targetUrl, nil, retryTime)
 }
 
 // sysc get content, every retryTime will sleeping 1 min
 // 同步的获取内容，retryTime 代表重试次数，每次会等待1分钟, header 是请求头
-func (wc *WdRequest) SyncGetWithHeader(targetUrl string, header map[string]string, retryTime int) *WdResponse {
+func (wc *WdRequest) SyncGetWithHeader(targetUrl string, header map[string]string, retryTime int) (*WdResponse, error) {
 	//HACK: 这里的实现方式非常粗糙 todo:换一种实现方式
 	exist, err := wc.ExistURL(targetUrl)
 
@@ -183,15 +167,11 @@ func (wc *WdRequest) SyncGetWithHeader(targetUrl string, header map[string]strin
 		exist, err = wc.ExistURL(targetUrl)
 	}
 	if err != nil {
-		panic(err)
+		return nil, err
 
 	}
 	if !exist {
-		if header == nil {
-			wc.SendRequest(targetUrl, nil)
-		} else {
-			wc.SendRequest(targetUrl, &header)
-		}
+		wc.SendRequest(targetUrl, &header)
 		time.Sleep(30 * time.Second)
 	}
 
@@ -200,5 +180,5 @@ func (wc *WdRequest) SyncGetWithHeader(targetUrl string, header map[string]strin
 		time.Sleep(10 * time.Second)
 		wd = wc.GetContent(targetUrl)
 	}
-	return wd
+	return wd, nil
 }
