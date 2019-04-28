@@ -76,7 +76,7 @@ func (wc *WdRequest) ExistURL(targetUrl string) (bool, error) {
 func NewWdRequest(port int) *WdRequest {
 	header := make(map[string]string)
 	mu := mysqlutil.MysqlUtil{}
-	err := mu.InitMySqlUtilDetail(MYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 2, 10)
+	err := mu.InitMySqlUtilDetail(MYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 5, 10)
 	if err != nil {
 		panic(err)
 	}
@@ -93,7 +93,7 @@ func NewWdRequestLAN(port int) *WdRequest {
 
 	header := make(map[string]string)
 	mu := mysqlutil.MysqlUtil{}
-	err := mu.InitMySqlUtilDetail(LANMYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 2, 10)
+	err := mu.InitMySqlUtilDetail(LANMYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 5, 10)
 	if err != nil {
 		panic(err)
 	}
@@ -115,10 +115,10 @@ func (wc *WdRequest) RestMysqlConnection() error {
 
 	mu := mysqlutil.MysqlUtil{}
 	if wc.isLan {
-		err = mu.InitMySqlUtilDetail(LANMYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 2, 10)
+		err = mu.InitMySqlUtilDetail(LANMYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 5, 10)
 
 	} else {
-		err = mu.InitMySqlUtilDetail(MYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 2, 10)
+		err = mu.InitMySqlUtilDetail(MYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 5, 10)
 
 	}
 	if err != nil {
