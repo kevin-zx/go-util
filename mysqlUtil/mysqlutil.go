@@ -177,9 +177,9 @@ func (mu *MysqlUtil) SelectAll(sqlstr string, args ...interface{}) (*[]map[strin
 
 	rows, err := stmtOut.Query(args...)
 	if err != nil {
-		//panic(err.Error())
 		return nil, err
 	}
+	//panic(err.Error())
 	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {

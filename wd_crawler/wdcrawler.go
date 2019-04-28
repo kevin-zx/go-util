@@ -3,6 +3,7 @@ package wd_crawler
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/kevin-zx/go-util/dateUtil"
 	"github.com/kevin-zx/go-util/mysqlUtil"
 	"strconv"
@@ -183,7 +184,8 @@ func (wc *WdRequest) SyncGetWithHeader(targetUrl string, header map[string]strin
 		exist, err = wc.ExistURL(targetUrl)
 	}
 	if err != nil {
-		panic(err)
+		fmt.Println(err.Error())
+		time.Sleep(60 * time.Second)
 
 	}
 	if !exist {
