@@ -1,24 +1,23 @@
 package mysqlutil
 
-
 import (
-"database/sql"
-"fmt"
-_ "github.com/go-sql-driver/mysql"
+	"database/sql"
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type MysqlUtil struct {
 	db *sql.DB
-	
 }
+
 var GlobalMysqlUtil MysqlUtil
 
-func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int,MaxOpenConns int) error {
+func (mu *MysqlUtil) initMySqlUtil(host string, port int, user string, passwd string, databases string, maxIdleConns int, MaxOpenConns int) error {
 	// 避免重复调用
-	if mu.db != nil{
+	if mu.db != nil {
 		mu.Close()
 	}
-	dataSourceNameFormat := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",user,passwd,host,port,databases)
+	dataSourceNameFormat := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", user, passwd, host, port, databases)
 	println(dataSourceNameFormat)
 	mu.db, _ = sql.Open("mysql", dataSourceNameFormat)
 	mu.db.SetMaxIdleConns(maxIdleConns)
@@ -38,7 +37,7 @@ func (mu *MysqlUtil) IsInit() bool {
 	return mu.db != nil
 }
 
-func (mu *MysqlUtil) IsAlive() bool  {
+func (mu *MysqlUtil) IsAlive() bool {
 	if mu.db == nil {
 		return false
 	}
@@ -58,14 +57,13 @@ func (mu *MysqlUtil) Close() error {
 	return err
 }
 
-func (mu *MysqlUtil) InitMySqlUtilDetail(host string, port int, user string, passwd string, databases string, axIdleConns int,MaxOpenConns int) error {
-	return mu.initMySqlUtil(host,port,user,passwd,databases,axIdleConns,MaxOpenConns)
+func (mu *MysqlUtil) InitMySqlUtilDetail(host string, port int, user string, passwd string, databases string, axIdleConns int, MaxOpenConns int) error {
+	return mu.initMySqlUtil(host, port, user, passwd, databases, axIdleConns, MaxOpenConns)
 }
 
 func (mu *MysqlUtil) InitMySqlUtil(host string, port int, user string, passwd string, databases string) error {
-	return mu.initMySqlUtil(host,port,user,passwd,databases,0,1)
+	return mu.initMySqlUtil(host, port, user, passwd, databases, 0, 1)
 }
-
 
 func (mu *MysqlUtil) Insert(prepareSql string, args ...interface{}) error {
 	stmt, err := mu.db.Prepare(prepareSql)
@@ -80,22 +78,22 @@ func (mu *MysqlUtil) Insert(prepareSql string, args ...interface{}) error {
 	return nil
 }
 
-func (mu *MysqlUtil) InsertId(prepareSql string, args ...interface{}) (int64,error) {
+func (mu *MysqlUtil) InsertId(prepareSql string, args ...interface{}) (int64, error) {
 	stmt, err := mu.db.Prepare(prepareSql)
 	if err != nil {
-		return 0,err
+		return 0, err
 	}
 	defer stmt.Close()
 	re, err := stmt.Exec(args...)
 	if err != nil {
-		return 0,err
+		return 0, err
 	}
-	lastId,err := re.LastInsertId()
+	lastId, err := re.LastInsertId()
 
 	if err != nil {
-		return 0,err
+		return 0, err
 	}
-	return lastId,nil
+	return lastId, nil
 }
 
 func (mu *MysqlUtil) Exec(prepareSql string, args ...interface{}) error {
@@ -111,9 +109,6 @@ func (mu *MysqlUtil) Exec(prepareSql string, args ...interface{}) error {
 	}
 	return nil
 }
-
-
-
 
 func (mu *MysqlUtil) ExecBatch(prepareSql string, args [][]interface{}) error {
 	tx, err := mu.db.Begin()
@@ -172,25 +167,24 @@ func (mu *MysqlUtil) Select(prepareSql string, args ...interface{}) ([][]sql.Raw
 	return valueArr, nil
 }
 
-
 func (mu *MysqlUtil) SelectAll(sqlstr string, args ...interface{}) (*[]map[string]string, error) {
 	stmtOut, err := mu.db.Prepare(sqlstr)
 	if err != nil {
 		//panic(err.Error())
-		return nil,err
+		return nil, err
 	}
 	defer stmtOut.Close()
 
 	rows, err := stmtOut.Query(args...)
 	if err != nil {
 		//panic(err.Error())
-		return nil,err
+		return nil, err
 	}
-
+	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {
 		//panic(err.Error())
-		return nil,err
+		return nil, err
 	}
 
 	values := make([]sql.RawBytes, len(columns))
@@ -205,7 +199,7 @@ func (mu *MysqlUtil) SelectAll(sqlstr string, args ...interface{}) (*[]map[strin
 		err = rows.Scan(scanArgs...)
 		if err != nil {
 			//panic(err.Error())
-			return nil,err
+			return nil, err
 		}
 		var value string
 		vmap := make(map[string]string, len(scanArgs))
