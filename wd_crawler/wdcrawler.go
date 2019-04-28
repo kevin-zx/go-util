@@ -194,7 +194,7 @@ func (wc *WdRequest) SyncGetWithHeader(targetUrl string, header map[string]strin
 		} else {
 			wc.SendRequest(targetUrl, &header)
 		}
-		time.Sleep(30 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 
 	wd := wc.GetContent(targetUrl)
