@@ -162,6 +162,7 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 		if err != nil {
 			return "", err
 		}
+		defer gzreader.Close()
 		for {
 			buf := make([]byte, 1024)
 			n, err := gzreader.Read(buf)
@@ -173,7 +174,7 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 			}
 			htmlbytes = append(htmlbytes, buf...)
 		}
-		gzreader.Close()
+
 		//htmlbytes,err=ioutil.ReadAll(gzreader)
 		//println(string(htmlbytes))
 	} else {
