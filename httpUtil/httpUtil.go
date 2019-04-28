@@ -111,6 +111,7 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 	}
 
 	client.Jar, _ = cookiejar.New(nil)
+
 	method = strings.ToUpper(method)
 	var req *http.Request
 	var err error
@@ -134,7 +135,7 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 	for key, value := range headerMap {
 		req.Header.Add(key, value)
 	}
-
+	defer client.CloseIdleConnections()
 	return client.Do(req)
 }
 
