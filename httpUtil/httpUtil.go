@@ -130,6 +130,7 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 		}
 
 	}
+
 	for key, value := range headerMap {
 		req.Header.Add(key, value)
 	}
@@ -158,15 +159,15 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 	contentEncoding, ok := response.Header["Content-Encoding"]
 	if ok && contentEncoding[0] == "gzip" {
 		gzreader, err := gzip.NewReader(response.Body)
-
 		if err != nil {
 			return "", err
 		}
-		defer gzreader.Close()
+
 		for {
 			buf := make([]byte, 1024)
 			n, err := gzreader.Read(buf)
 			if err != nil && err != io.EOF {
+				gzreader.Close()
 				return "", err
 			}
 			if n == 0 {
@@ -174,7 +175,7 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 			}
 			htmlbytes = append(htmlbytes, buf...)
 		}
-
+		gzreader.Close()
 		//htmlbytes,err=ioutil.ReadAll(gzreader)
 		//println(string(htmlbytes))
 	} else {
@@ -186,6 +187,7 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 		return "", errors.New(fmt.Sprintf("状态码为: %d", response.StatusCode))
 	}
 	hreader := bytes.NewReader(htmlbytes)
+
 	char, data := detectContentCharset(hreader)
 	if charset != "" {
 		char = charset

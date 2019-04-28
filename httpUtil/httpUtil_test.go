@@ -21,17 +21,29 @@ func testGetWebConFromUrl(t testing.T) {
 
 func TestGetWebConFromUrl(t *testing.T) {
 	//m.daishibuxi.cn
-	reponse, err := GetWebResponseFromUrl("http://www.whcyzx.cn")
-	if err != nil {
-		t.Error(err)
-	}
-	content, err := ReadContentFromResponse(reponse, "utf-8")
-	if err != nil {
-		t.Error(err)
-	}
-	if len(content) == 0 {
-		t.Error("get empty web content")
-	}
+
+	go func() {
+		for {
+			reponse, err := GetWebResponseFromUrl("http://www.baidu.com")
+			if err != nil {
+				//t.Error(err)
+				fmt.Println(err.Error())
+				continue
+			}
+			content, err := ReadContentFromResponse(reponse, "utf-8")
+			if err != nil {
+				//t.Error(err)
+				fmt.Println(err.Error())
+				continue
+			}
+			if len(content) == 0 {
+				fmt.Println("get empty web content")
+				//t.Error("get empty web content")
+			}
+		}
+
+	}()
+	time.Sleep(1000 * time.Second)
 }
 
 func testGetWebConFromUrlWithHeader(t testing.T) {
