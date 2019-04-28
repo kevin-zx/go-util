@@ -158,6 +158,7 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 	contentEncoding, ok := response.Header["Content-Encoding"]
 	if ok && contentEncoding[0] == "gzip" {
 		gzreader, err := gzip.NewReader(response.Body)
+
 		if err != nil {
 			return "", err
 		}
@@ -172,6 +173,7 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 			}
 			htmlbytes = append(htmlbytes, buf...)
 		}
+		gzreader.Close()
 		//htmlbytes,err=ioutil.ReadAll(gzreader)
 		//println(string(htmlbytes))
 	} else {
@@ -192,6 +194,7 @@ func ReadContentFromResponse(response *http.Response, charset string) (string, e
 	}
 
 	dec := mahonia.NewDecoder(char)
+
 	preRd := dec.NewReader(data)
 	if preRd == nil {
 		return "", errors.New("读取头部文件为空")
