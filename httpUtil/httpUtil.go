@@ -135,8 +135,9 @@ func doRequest(targetUrl string, headerMap map[string]string, method string, pos
 	for key, value := range headerMap {
 		req.Header.Add(key, value)
 	}
-	defer client.CloseIdleConnections()
-	return client.Do(req)
+	res, err := client.Do(req)
+	client.CloseIdleConnections()
+	return res, err
 }
 
 func URLEncode(keyword string) string {
