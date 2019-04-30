@@ -65,7 +65,7 @@ func (wc *WdRequest) SendRequest(targetUrl string, header *map[string]string) er
 
 }
 func (wc *WdRequest) ExistURL(targetUrl string) (bool, error) {
-	data, err := wc.mu.SelectAll("SELECT * FROM urls_16 where `md5` = md5(?) AND type=? AND status !=3 LIMIT 1", targetUrl, wc.ContentType)
+	data, err := wc.mu.SelectAll("SELECT * FROM urls_16 where `md5` = md5(?) AND type=?  LIMIT 1", targetUrl, wc.ContentType)
 	if err != nil {
 		//return false,err
 		log.Println(err)

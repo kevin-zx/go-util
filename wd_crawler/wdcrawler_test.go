@@ -22,3 +22,8 @@ func TestWdRequest_GetContent(t *testing.T) {
 
 	fmt.Println(wd.Result)
 }
+
+func TestWdRequest_SyncGet(t *testing.T) {
+	wd := NewWdRequest(1)
+	wd.SyncGet("https://www.baidu.com/s?wd=%E7%8B%AC%E5%A2%85%E6%B9%96%E5%8C%BB%E9%99%A2&rn=50&pn=0", 10)
+}
