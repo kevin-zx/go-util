@@ -1,12 +1,15 @@
 package wd_crawler
 
 import (
+	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/kevin-zx/go-util/dateUtil"
 	"github.com/kevin-zx/go-util/mysqlUtil"
 	"strconv"
+	"strings"
 	"time"
 	//"sync"
 	"log"
@@ -91,7 +94,6 @@ func NewWdRequest(port int) *WdRequest {
 }
 
 func NewWdRequestLAN(port int) *WdRequest {
-
 	header := make(map[string]string)
 	mu := mysqlutil.MysqlUtil{}
 	err := mu.InitMySqlUtilDetail(LANMYSQLHOST, 3306, "spider_center", "spiderdb@wd", "spider", 5, 10)
@@ -140,6 +142,31 @@ func (wc *WdRequest) DeleteUrlTask(targetUrl string, status int) {
 	} else {
 		wc.mu.Exec("DELETE FROM urls_16 where `md5` = md5(?) AND type=?", targetUrl, wc.ContentType)
 	}
+}
+
+func (wc *WdRequest) URLsIsComplete(urls []string) []string {
+	resultUrls := []string{}
+	urlMd5s := []string{}
+	for _, u := range urls {
+		urlMd5s = append(urlMd5s, "'"+md5url(u)+"'")
+	}
+	data, err := wc.mu.SelectAll("SELECT url FROM urls_16 WHERE `md5` IN ("+strings.Join(urlMd5s, ",")+") AND `status`>1 AND type = ?", wc.ContentType)
+	if err != nil {
+		return resultUrls
+	}
+
+	for _, d := range *data {
+		curl := d["url"]
+		resultUrls = append(resultUrls, curl)
+
+	}
+	return resultUrls
+}
+
+func md5url(url string) string {
+	h := md5.New()
+	h.Write([]byte(url))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (wc *WdRequest) GetContent(targetUrl string) *WdResponse {
