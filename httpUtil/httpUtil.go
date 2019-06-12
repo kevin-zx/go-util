@@ -48,7 +48,7 @@ func GetWebConFromUrlWithAllArgs(url string, headerMap map[string]string, method
 	if err != nil {
 		return "", err
 	}
-	return GetContentFromResponse(response)
+	return ReadContentFromResponse(response, "")
 }
 
 //GetWebConFromUrlWithHeader get web con from target url
